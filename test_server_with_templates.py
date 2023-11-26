@@ -14,8 +14,6 @@ async def home():
 
 @app.get("/cats")
 async def cats(cat_id=None):
-    if not cat_id:
-        return "We love cats"
     return f"<h1>We love cats with cat_id:{cat_id}</h1>"
 
 
