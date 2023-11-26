@@ -35,9 +35,11 @@ class SlowAPI:
             handler = self.routes[request.method][request.path]
             varnames = handler.__code__.co_varnames
             params = []
+            request_params = request.query_params
+            request_params.update(request.body_params)
             for var in varnames:
-                if var in request.query_params:   
-                    params.append(request.query_params[var])
+                if var in request_params:   
+                    params.append(request_params[var])
             body = await handler(*params)
         except Exception as e:
             resp = Response(status_code=404, status_message="Not Found", body="Not Found")

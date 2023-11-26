@@ -1,3 +1,5 @@
+import json
+
 class Request:
     def __init__(self, data=None):
         if data is None:
@@ -23,8 +25,11 @@ class Request:
                 self.headers[name.strip()] = value.strip()
 
         if self.method == "POST":
-            body = lines[-1]
-            self.parse_body_params(body)
+            content_type = self.headers.get("Content-Type", "")
+            if "application/json" in content_type:
+                body_start = message.index("\r\n\r\n") + 4
+                body = message[body_start:]
+                self.parse_json_body(body)
 
     def parse_query_params(self, query_string):
         pairs = query_string.split("&")
@@ -32,8 +37,9 @@ class Request:
             key, value = pair.split("=")
             self.query_params[key] = value
 
-    def parse_body_params(self, body):
-        pairs = body.split("&")
-        for pair in pairs:
-            key, value = pair.split("=")
-            self.body_params[key] = value
+    def parse_json_body(self, body):
+        try:
+            self.body_params = json.loads(body)
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON body: {e}")
+            self.body_params = {}
