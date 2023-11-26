@@ -6,18 +6,15 @@ from SlowAPI import SlowAPI
 app = SlowAPI()
 
 
-@app.route('/', method='GET')
+@app.get('/')
 async def home(request):
-    pass
+    return f"{request.method} \n {request.path} \n {request.protocol} \n {request.headers}"
 
 
-@app.route('/hui', method='GET')
+@app.post('/post')
 async def greet(request):
-    pass
+    return f"{request.method} \n {request.path} \n {request.protocol} \n {request.headers}"
 
-
-async def main():
-    await app.run_server('127.0.0.1', 8080)
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    app.run_server('127.0.0.1', 8080)
