@@ -163,7 +163,6 @@ class AsyncMySQLConnector:
         self.pool.close()
         await self.pool.wait_closed()
 
-
 async def main():
     try:
         connector = AsyncMySQLConnector(host='localhost', port=8081, user='admin', password='admin', db='db')
@@ -178,7 +177,6 @@ async def main():
         )
         await connector.execute(str(create_query))
 
-        # Insert some data into the table
         insert_query = (
             Query()
             .INSERT_INTO('USERS', 'name', 'age')
@@ -186,7 +184,6 @@ async def main():
         )
         await connector.execute(str(insert_query), insert_query._data['insert_into']['values'][0])
 
-        # Select data from the table
         select_query = (
             Query()
             .SELECT('*')
@@ -194,7 +191,6 @@ async def main():
         )
         result = await connector.execute(str(select_query))
         print(result)
-
     finally:
         await connector.close()
 
