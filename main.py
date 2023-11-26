@@ -1,7 +1,7 @@
 import asyncio
 
 from request import Request
-from request import Response
+from response import Response
 
 
 class SlowAPI:
@@ -21,14 +21,9 @@ class SlowAPI:
         return wrapper
 
     async def handle_request(self, reader, writer):
-        req = Request(await reader.read(10000))
-
-        ret = await self.routes[req.method][req.path]()
-
-        resp = Response(ret)
-        # write response
-
-        writer.write(resp.encode())
+        request = Request(await reader.read(10000))
+        ret = await self.routes[request.method][request.path]()
+        Response(ret, writer)
 
     async def run_server(self, host, port):
         server = await asyncio.start_server(
