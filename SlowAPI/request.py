@@ -7,6 +7,7 @@ class Request:
         request_line = lines[0].split()
         self.method = request_line[0]
         self.path = request_line[1]
+        self.path = self.path[ : self.path.find("?")]
         self.protocol = request_line[2]
         self.headers = {}
         for line in lines[1:]:
