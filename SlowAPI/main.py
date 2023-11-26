@@ -30,10 +30,11 @@ class SlowAPI:
         return wrapper
 
     async def handle_request(self, reader, writer):
+        print(self.routes)
         request = Request(await reader.read(10000))
         params = ...
         try:
-            body = await self.routes[request.method][request.path](params)
+            body = await self.routes[request.method][request.path]()
         except Exception as e:
             resp = Response(status_code=404, status_message="Not Found", body=str(e))
         else:
