@@ -2,11 +2,17 @@ import asyncio
 
 from request import Request
 from response import Response
-
+from slowserver import SlowServer
 
 class SlowAPI:
     def __init__(self):
         self.routes = {'GET': {}, 'POST': {}}
+        self.ip = '127.0.0.1'
+        self.port = 8080
+
+    def set_ip(self, ip, port):
+        self.ip = ip
+        self.port = port
 
     def get(self, path):
         def wrapper(handler):
@@ -25,13 +31,6 @@ class SlowAPI:
         ret = await self.routes[request.method][request.path]()
         Response(ret, writer)
 
-    async def run_server(self, host, port):
-        server = await asyncio.start_server(
-            self.handle_request, host, port
-        )
-
-        addr = server.sockets[0].getsockname()
-        print(f'Serving on {addr}')
-
-        async with server:
-            await server.serve_forever()
+    def run(self):
+        serv = SlowServer(self.handle_request)
+        asyncio.run(serv.run_server(self.ip, self.port))
