@@ -1,6 +1,7 @@
 class Response:
-    def __init__(self, status_code=200, headers=None, body=None):
+    def __init__(self, status_code=200, status_message='OK', headers=None, body=None):
         self.status_code = status_code
+        self.status_message = status_message
         self.headers = headers or {}
         self.body = body or b''
 
