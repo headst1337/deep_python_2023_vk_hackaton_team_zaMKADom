@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import aiomysql
 import asyncio
 
@@ -163,36 +164,117 @@ class AsyncMySQLConnector:
         self.pool.close()
         await self.pool.wait_closed()
 
-async def main():
-    try:
-        connector = AsyncMySQLConnector(host='localhost', port=8081, user='admin', password='admin', db='db')
-        await connector.connect()
+    async def fetch(self, query, params=None):
+        print(f"Fetching results for query: {query}")
+        async with self.pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cur:
+                await cur.execute(query, params)
+                result = await cur.fetchall()
+        return result
 
+class Manager:
+
+    def __init__(self, models_class):
+        self.models_class = models_class
+        self._model_fields = models_class._original_fields.keys()
+        q = Query()
+        self.q = q.SELECT(*self._model_fields).FROM(models_class._model_name)
+        self._connector = AsyncMySQLConnector(host='localhost', port=8081, user='admin', password='admin', db='db')
+
+    async def filter(self, **kwargs):
+        await self._connector.connect()
+        self.q = self.q.WHERE(**kwargs)
+        await self._connector.close()
+        return self
+
+    async def fetch(self):
+        await self._connector.connect()
+        q = str(self.q)
+        db_results = await self._connector.fetch(q)
+        results = []
+        for row in db_results:
+            model = self.models_class()
+            for field, val in zip(self._model_fields, row):
+                setattr(model, field, val)
+            results.append(model)
+        await self._connector.close()
+        return results
+    
+    async def create_table(self):
+        await self._connector.connect()
         create_query = (
             Query()
             .CREATE(
-                table_name='USERS',
-                columns={'id': 'INT AUTO_INCREMENT PRIMARY KEY', 'name': 'VARCHAR(255)', 'age': 'INT'}
+                table_name=self.models_class._model_name,
+                columns={field: 'INT' if isinstance(field_type, IntegerField) else 'VARCHAR(255)' for field, field_type in self.models_class._original_fields.items()}
             )
         )
-        await connector.execute(str(create_query))
+        await self._connector.execute(str(create_query))
+        await self._connector.close()
+    
+    async def insert(self, *, values):
+        await self._connector.connect()
+        insert_query = Query().INSERT_INTO(self.models_class._model_name, *self._model_fields).VALUES(*values)
+        await self._connector.execute(str(insert_query), insert_query._data['insert_into']['values'][0])
+        await self._connector.close()
 
-        insert_query = (
-            Query()
-            .INSERT_INTO('USERS', 'name', 'age')
-            .VALUES('John Doe', 25)
-        )
-        await connector.execute(str(insert_query), insert_query._data['insert_into']['values'][0])
+        return self
 
-        select_query = (
-            Query()
-            .SELECT('*')
-            .FROM('USERS')
-        )
-        result = await connector.execute(str(select_query))
-        print(result)
-    finally:
-        await connector.close()
+class Field:
+    pass
 
-# Run the event loop
+
+class IntegerField(Field):
+    pass
+
+
+class CharField(Field):
+    pass
+
+
+class ModelMeta(type):
+
+    def __new__(mcs, class_name, parents, attributes):
+        fields = OrderedDict()
+        for k, v in attributes.items():
+            if isinstance(v, Field):
+                fields[k] = v
+                attributes[k] = None
+        model = super(ModelMeta, mcs).__new__(mcs, class_name, parents, attributes)
+        setattr(model, '_model_name', attributes['__qualname__'].lower())
+        setattr(model, '_original_fields', fields)
+        setattr(model, 'objects', Manager(model))
+        return model
+
+
+class Model(metaclass=ModelMeta):
+    pass
+
+
+class UserModel1(Model):
+
+    id = IntegerField()
+    name = CharField()
+    age = IntegerField()
+
+    def __str__(self):
+        return f'<ID {self.id} : {self.name} Age {self.age}>'
+
+    def __repr__(self):
+        return self.__str__()
+
+
+async def main():
+   
+    user_model_manager = UserModel1.objects
+    await user_model_manager.create_table()
+    await user_model_manager.insert(values=(1, 'John', 25))
+    await user_model_manager.insert(values=(2, 'Alice', 30))
+    await user_model_manager.insert(values=(3, 'Bob', 22))
+    model = UserModel1()
+    print(model.id, model.name, model._model_name, model._original_fields)
+    filter = (await model.objects.filter())
+    fetch = await model.objects.fetch()
+    print(fetch)
+
 asyncio.run(main())

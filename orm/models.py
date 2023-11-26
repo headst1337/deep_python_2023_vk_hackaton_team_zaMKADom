@@ -13,6 +13,7 @@ class IntegerField(Field):
 class CharField(Field):
     pass
 
+# connector = AsyncMySQLConnector(host='localhost', port=8081, user='admin', password='admin', db='db')
 
 class ModelMeta(type):
 
