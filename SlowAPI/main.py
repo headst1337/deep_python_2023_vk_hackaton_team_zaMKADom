@@ -31,11 +31,17 @@ class SlowAPI:
 
     async def handle_request(self, reader, writer):
         request = Request(await reader.read(10000))
-        #params = ...
         try:
-            body = await self.routes[request.method][request.path](request)
+            handler = self.routes[request.method][request.path]
+            varnames = handler.__code__.co_varnames
+            params = []
+            for var in varnames:
+                if var not in request.query_params:
+                    raise Exception()
+                params.append(request.query_params[var])
+            body = await self.routes[request.method][request.path](*params)
         except Exception as e:
-            resp = Response(status_code=404, status_message="Not Found", body=str(e))
+            resp = Response(status_code=404, status_message="Not Found", body="Not Found")
         else:
             resp = Response(status_code=200, status_message="OK", body=body)
         finally:
