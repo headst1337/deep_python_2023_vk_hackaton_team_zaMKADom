@@ -17,4 +17,4 @@ async def greet(request):
 
 
 if __name__ == '__main__':
-    app.run_server('127.0.0.1', 8080)
+    app.run()
