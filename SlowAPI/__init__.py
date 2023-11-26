@@ -1,1 +1,2 @@
-from SlowAPI.main import SlowAPI
+from .main import SlowAPI
+from .render import Render
