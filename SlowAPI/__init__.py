@@ -1,1 +1,1 @@
-from main import SlowAPI
+from SlowAPI.main import SlowAPI
