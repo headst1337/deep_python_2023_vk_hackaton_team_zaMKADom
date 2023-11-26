@@ -14,7 +14,7 @@ class Response:
     def build(self):
         return f'HTTP/1.1 {self.status_code} {self.status_message}\r\n' + \
                '\r\n'.join([f'{key}: {value}' for key, value in self.headers.items()]) + \
-               f'\r\n\r\n{self.body.decode()}'
+               f'\r\n\r\n{self.body}'
 
     async def send(self, writer):
         writer.write(self.build().encode())
