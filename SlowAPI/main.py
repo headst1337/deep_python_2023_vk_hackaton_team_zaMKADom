@@ -32,10 +32,12 @@ class SlowAPI:
 
         try:
             body = await self.routes[request.method][request.path]()
-            Response(status_code=200, status_message='OK', body=body).send(writer)
         except Exception as e:
-            body = str(e)
-            Response(status_code=404, status_message='Not Found', body=body).send(writer)
+            resp = Response(status_code=404, status_message='Not Found', body=str(e))
+        else:
+            resp = Response(status_code=200, status_message='OK', body=body)
+        finally:
+            resp.send(writer)
 
     def run(self):
         serv = SlowServer(self.handle_request)
