@@ -33,14 +33,12 @@ class SlowAPI:
         request = Request(await reader.read(10000))
 
         try:
-            body = await self.routes[request.method][request.path](request)
-            print("b", body)
+            body = await self.routes[request.method][request.path]()
         except Exception as e:
             resp = Response(status_code=404, status_message="Not Found", body=str(e))
         else:
             resp = Response(status_code=200, status_message="OK", body=body)
         finally:
-            print("r", resp)
             await resp.send(writer)
 
     def run(self):

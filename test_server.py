@@ -7,17 +7,8 @@ app = SlowAPI()
 
 
 @app.get("/")
-async def home(request):
-    return (
-        f"{request.method} \n {request.path} \n {request.protocol} \n {request.headers}"
-    )
-
-
-@app.post("/post")
-async def greet(request):
-    return (
-        f"{request.method} \n {request.path} \n {request.protocol} \n {request.headers}"
-    )
+async def home():
+    return "Hello, World!"
 
 
 if __name__ == "__main__":
