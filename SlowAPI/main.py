@@ -30,7 +30,6 @@ class SlowAPI:
         return wrapper
 
     async def handle_request(self, reader, writer):
-        print(self.routes)
         request = Request(await reader.read(10000))
         params = ...
         try:
