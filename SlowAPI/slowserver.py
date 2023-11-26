@@ -7,7 +7,7 @@ class SlowServer:
 
     async def run_server(self, host, port):
         server = await asyncio.start_server(
-            self.handle_request, host, port
+            self.handler, host, port
         )
 
         addr = server.sockets[0].getsockname()
