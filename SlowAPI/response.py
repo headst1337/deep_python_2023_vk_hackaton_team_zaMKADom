@@ -3,13 +3,13 @@ class Response:
         self.status_code = status_code
         self.status_message = status_message
         self.headers = headers or {}
-        self.body = body or b''
+        self.body = body or ''
 
     def set_header(self, key, value):
         self.headers[key] = value
 
     def set_body(self, body):
-        self.body = body.encode() if isinstance(body, str) else body
+        self.body = body
 
     def build(self):
         return f'HTTP/1.1 {self.status_code} {self.status_message}\r\n' + \
