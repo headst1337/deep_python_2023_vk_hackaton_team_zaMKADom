@@ -1,7 +1,7 @@
 import asyncio
 
-from request import Request
-from response import Response
+from SlowAPI.request import Request
+from SlowAPI.response import Response
 
 
 class SlowAPI:
