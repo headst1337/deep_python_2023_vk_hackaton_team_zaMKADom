@@ -12,7 +12,7 @@ class Response:
         self.body = body.encode() if isinstance(body, str) else body
 
     def build(self):
-        return f'HTTP/1.1 {self.status_code}\r\n' + \
+        return f'HTTP/1.1 {self.status_code} {self.status_message}\r\n' + \
                '\r\n'.join([f'{key}: {value}' for key, value in self.headers.items()]) + \
                f'\r\n\r\n{self.body.decode()}'
 
