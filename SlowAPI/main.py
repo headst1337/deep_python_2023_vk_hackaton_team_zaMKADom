@@ -6,7 +6,7 @@ from response import Response
 
 class SlowAPI:
     def __init__(self):
-        self.routes = {'get': {}, 'post': {}}
+        self.routes = {'GET': {}, 'POST': {}}
 
     def get(self, path):
         def wrapper(handler):
